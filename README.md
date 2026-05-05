@@ -5,13 +5,17 @@ A small static button board for copying reusable text templates. It is designed 
 ## Features
 
 - Copy templates with one click.
+- Add, edit, and delete templates from the browser.
 - Search and filter templates.
 - Filter by category.
-- Shared source-controlled templates through GitHub Pages.
+- Choose from existing categories or add a new category.
+- Sync shared templates through Firebase Firestore.
 
 ## Edit Templates
 
-The live page is copy-only so every device sees the same templates. To change templates, update the `defaultTemplates` array in `index.html` and push the file to GitHub.
+The live page lets users add, edit, and delete templates. Changes are saved in Firebase Firestore, so the same templates appear on phone, work laptop, and desktop.
+
+The `defaultTemplates` array in `index.html` is only used to seed Firestore the first time the database is empty.
 
 ```js
 {
@@ -23,7 +27,17 @@ Your template text goes here.`
 }
 ```
 
-Because the templates live in the source file, updates appear consistently for everyone after GitHub Pages redeploys.
+After Firestore has templates, the live data in Firebase is the source of truth.
+
+## Firebase Setup
+
+1. Create a Firebase project.
+2. Add a web app and copy the Firebase config into `index.html`.
+3. Go to **Build > Firestore Database**.
+4. Create the database.
+5. Start in test mode while building.
+
+Test mode is not permanent. Later, lock editing behind Firebase Authentication so only approved users can add, edit, or delete buttons.
 
 ## Publish With GitHub Pages
 
