@@ -2,9 +2,16 @@
 
 A small static button board for copying reusable text templates. It is designed for GitHub Pages and uses Campbell University orange for the template buttons.
 
+## Features
+
+- Copy templates with one click.
+- Search and filter templates.
+- Filter by category.
+- Shared source-controlled templates through GitHub Pages.
+
 ## Edit Templates
 
-Open `index.html` and edit the `templates` array near the bottom of the file:
+The live page is copy-only so every device sees the same templates. To change templates, update the `defaultTemplates` array in `index.html` and push the file to GitHub.
 
 ```js
 {
@@ -15,6 +22,8 @@ Open `index.html` and edit the `templates` array near the bottom of the file:
 Your template text goes here.`
 }
 ```
+
+Because the templates live in the source file, updates appear consistently for everyone after GitHub Pages redeploys.
 
 ## Publish With GitHub Pages
 
