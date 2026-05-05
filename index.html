@@ -606,17 +606,32 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
     let statusTimer;
     let initialSnapshotSeen = false;
     let isSeeding = false;
+    let firestoreReady = false;
+
+    addTemplate.disabled = true;
 
     window.setTimeout(() => {
       if (!initialSnapshotSeen) {
         templates = defaultTemplates;
         renderCategories();
         renderTemplates();
-        showStatus("Firestore setup needed", false);
+        showStatus("Enable Firestore", false);
       }
     }, 6000);
 
-    onSnapshot(templatesCollection, async (snapshot) => {
+    onSnapshot(templatesCollection, { includeMetadataChanges: true }, async (snapshot) => {
+      if (snapshot.metadata.hasPendingWrites) {
+        showStatus("Saving...", false);
+        return;
+      }
+
+      if (snapshot.metadata.fromCache) {
+        return;
+      }
+
+      firestoreReady = true;
+      addTemplate.disabled = false;
+
       if (!initialSnapshotSeen && snapshot.empty && !isSeeding) {
         initialSnapshotSeen = true;
         await seedDefaultTemplates();
@@ -645,7 +660,9 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       showStatus("Synced", true);
     }, (error) => {
       console.error(error);
-      showStatus("Firestore setup needed", false);
+      firestoreReady = false;
+      addTemplate.disabled = true;
+      showStatus("Enable Firestore", false);
       templates = defaultTemplates;
       renderCategories();
       renderTemplates();
@@ -823,6 +840,11 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       const isEditing = Boolean(editingId);
       const id = editingId || makeTemplateId(title);
 
+      if (!firestoreReady) {
+        showStatus("Enable Firestore first", false);
+        return;
+      }
+
       if (!title || !category || !text) {
         showStatus("Title, category, and text are required", false);
         return;
@@ -854,6 +876,11 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
     }
 
     async function deleteTemplate(template) {
+      if (!firestoreReady) {
+        showStatus("Enable Firestore first", false);
+        return;
+      }
+
       const shouldDelete = window.confirm(`Delete "${template.title}"?`);
       if (!shouldDelete) {
         return;
