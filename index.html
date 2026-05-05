@@ -50,9 +50,9 @@
 
     .topbar {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 1fr auto auto;
       align-items: end;
-      gap: 20px;
+      gap: 14px;
       padding-bottom: 18px;
       border-bottom: 2px solid var(--campbell-black);
     }
@@ -71,6 +71,27 @@
       color: var(--muted);
       font-size: 16px;
       line-height: 1.45;
+    }
+
+    .primary-action {
+      min-width: 46px;
+      min-height: 42px;
+      display: inline-grid;
+      place-items: center;
+      padding: 9px 13px;
+      border: 1px solid var(--campbell-black);
+      border-radius: 8px;
+      background: var(--campbell-orange);
+      color: var(--white);
+      cursor: pointer;
+      font-size: 24px;
+      font-weight: 850;
+      line-height: 1;
+      box-shadow: 0 1px 2px rgba(30, 37, 43, 0.1);
+    }
+
+    .primary-action:hover {
+      background: var(--campbell-orange-dark);
     }
 
     .status {
@@ -149,7 +170,7 @@
 
     .template-card {
       position: relative;
-      min-height: 132px;
+      min-height: 148px;
       border: 1px solid var(--campbell-black);
       border-radius: 8px;
       background: var(--campbell-orange);
@@ -168,8 +189,8 @@
     .template-copy-button {
       appearance: none;
       width: 100%;
-      min-height: 132px;
-      padding: 18px;
+      min-height: 148px;
+      padding: 18px 18px 52px;
       border: 0;
       background: transparent;
       color: var(--white);
@@ -178,7 +199,11 @@
     }
 
     .template-copy-button:focus-visible,
-    .category-button:focus-visible {
+    .category-button:focus-visible,
+    .primary-action:focus-visible,
+    .action-button:focus-visible,
+    .modal-button:focus-visible,
+    .new-category-save:focus-visible {
       outline: 3px solid rgba(234, 113, 37, 0.35);
       outline-offset: 2px;
     }
@@ -218,6 +243,41 @@
       -webkit-box-orient: vertical;
     }
 
+    .template-actions {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 140ms ease, transform 140ms ease;
+    }
+
+    .template-card:hover .template-actions,
+    .template-card:focus-within .template-actions {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .action-button {
+      min-width: 44px;
+      min-height: 34px;
+      border: 1px solid var(--campbell-black);
+      border-radius: 8px;
+      background: var(--campbell-black);
+      color: var(--white);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 850;
+      line-height: 1;
+    }
+
+    .action-button:hover {
+      background: var(--white);
+      color: var(--campbell-black);
+    }
+
     .empty {
       display: none;
       padding: 22px;
@@ -232,6 +292,131 @@
       display: block;
     }
 
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(30, 37, 43, 0.68);
+    }
+
+    .modal-backdrop.is-open {
+      display: grid;
+    }
+
+    .modal {
+      width: min(560px, 100%);
+      padding: 22px;
+      border: 2px solid var(--campbell-black);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--campbell-black);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+    }
+
+    .modal h2 {
+      margin: 0 0 16px;
+      font-size: 28px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--campbell-black);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--campbell-black);
+      outline: none;
+    }
+
+    .field input,
+    .field select {
+      min-height: 44px;
+      padding: 10px 12px;
+    }
+
+    .field textarea {
+      min-height: 180px;
+      padding: 12px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      box-shadow: 0 0 0 3px rgba(234, 113, 37, 0.3);
+    }
+
+    .new-category {
+      display: none;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+      margin-top: 8px;
+    }
+
+    .new-category.is-visible {
+      display: grid;
+    }
+
+    .new-category-save {
+      min-height: 44px;
+      padding: 9px 13px;
+      border: 1px solid var(--campbell-black);
+      border-radius: 8px;
+      background: var(--campbell-black);
+      color: var(--white);
+      cursor: pointer;
+      font-weight: 850;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .modal-button {
+      min-height: 42px;
+      padding: 9px 14px;
+      border: 1px solid var(--campbell-black);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 850;
+    }
+
+    .modal-button.secondary {
+      background: var(--white);
+      color: var(--campbell-black);
+    }
+
+    .modal-button.primary {
+      background: var(--campbell-orange);
+      color: var(--white);
+    }
+
+    .modal-button.primary:hover {
+      background: var(--campbell-orange-dark);
+    }
+
     @media (max-width: 760px) {
       main {
         width: min(100vw - 24px, 1180px);
@@ -244,7 +429,8 @@
       }
 
       .status,
-      .categories {
+      .categories,
+      .primary-action {
         width: 100%;
       }
 
@@ -258,7 +444,22 @@
 
       .template-card,
       .template-copy-button {
-        min-height: 124px;
+        min-height: 132px;
+      }
+
+      .template-actions {
+        opacity: 1;
+        transform: none;
+      }
+
+      .modal-actions,
+      .new-category {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .new-category:not(.is-visible) {
+        display: none;
       }
     }
   </style>
@@ -270,7 +471,8 @@
         <h1>Template Button Board</h1>
         <p class="subtitle">Fast copy templates for follow-ups, document requests, reminders, and thank-you notes.</p>
       </div>
-      <div class="status" id="status" aria-live="polite">Ready to copy</div>
+      <button class="primary-action" id="addTemplate" type="button" aria-label="Add template">+</button>
+      <div class="status" id="status" aria-live="polite">Loading...</div>
     </header>
 
     <section class="controls" aria-label="Template filters">
@@ -282,7 +484,63 @@
     <p class="empty" id="empty">No matching templates.</p>
   </main>
 
-  <script>
+  <div class="modal-backdrop" id="modalBackdrop" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h2 id="modalTitle">Add Template</h2>
+      <form id="templateForm">
+        <div class="field">
+          <label for="templateTitle">Title</label>
+          <input id="templateTitle" name="title" type="text" required autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="templateCategory">Category</label>
+          <select id="templateCategory" name="category"></select>
+          <div class="new-category" id="newCategoryWrap">
+            <div>
+              <label for="newCategoryName">Category Name</label>
+              <input id="newCategoryName" type="text" autocomplete="off">
+            </div>
+            <button class="new-category-save" id="saveNewCategory" type="button">Save</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="templateText">Text to Copy</label>
+          <textarea id="templateText" name="text" required></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-button secondary" id="cancelTemplate" type="button">Cancel</button>
+          <button class="modal-button primary" id="saveTemplate" type="submit">Add</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      collection,
+      deleteDoc,
+      doc,
+      getFirestore,
+      onSnapshot,
+      serverTimestamp,
+      setDoc,
+      writeBatch
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtZqUBnndWZ3KdWOgQ-Woll1GK--5_CPI",
+      authDomain: "template-button-board.firebaseapp.com",
+      projectId: "template-button-board",
+      storageBucket: "template-button-board.firebasestorage.app",
+      messagingSenderId: "1047111226540",
+      appId: "1:1047111226540:web:3272eab5c37982b8e37b09"
+    };
+
+    const addNewCategoryValue = "__add_new_category__";
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const templatesCollection = collection(db, "templates");
     const defaultTemplates = [
       {
         id: "initial-follow-up",
@@ -329,9 +587,98 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
     const empty = document.querySelector("#empty");
     const search = document.querySelector("#search");
     const status = document.querySelector("#status");
-    const templates = defaultTemplates;
+    const addTemplate = document.querySelector("#addTemplate");
+    const modalBackdrop = document.querySelector("#modalBackdrop");
+    const modalTitle = document.querySelector("#modalTitle");
+    const templateForm = document.querySelector("#templateForm");
+    const titleField = document.querySelector("#templateTitle");
+    const categoryField = document.querySelector("#templateCategory");
+    const newCategoryWrap = document.querySelector("#newCategoryWrap");
+    const newCategoryName = document.querySelector("#newCategoryName");
+    const saveNewCategory = document.querySelector("#saveNewCategory");
+    const textField = document.querySelector("#templateText");
+    const cancelTemplate = document.querySelector("#cancelTemplate");
+    const saveTemplate = document.querySelector("#saveTemplate");
+
+    let templates = [];
     let activeCategory = "All";
+    let editingId = null;
     let statusTimer;
+    let initialSnapshotSeen = false;
+    let isSeeding = false;
+
+    window.setTimeout(() => {
+      if (!initialSnapshotSeen) {
+        templates = defaultTemplates;
+        renderCategories();
+        renderTemplates();
+        showStatus("Firestore setup needed", false);
+      }
+    }, 6000);
+
+    onSnapshot(templatesCollection, async (snapshot) => {
+      if (!initialSnapshotSeen && snapshot.empty && !isSeeding) {
+        initialSnapshotSeen = true;
+        await seedDefaultTemplates();
+        return;
+      }
+
+      initialSnapshotSeen = true;
+      templates = snapshot.docs
+        .map((templateDoc) => {
+          const data = templateDoc.data();
+          return {
+            id: templateDoc.id,
+            title: data.title || "Untitled Template",
+            category: cleanCategory(data.category),
+            text: data.text || ""
+          };
+        })
+        .sort(sortTemplates);
+
+      if (activeCategory !== "All" && !templates.some((template) => template.category === activeCategory)) {
+        activeCategory = "All";
+      }
+
+      renderCategories();
+      renderTemplates();
+      showStatus("Synced", true);
+    }, (error) => {
+      console.error(error);
+      showStatus("Firestore setup needed", false);
+      templates = defaultTemplates;
+      renderCategories();
+      renderTemplates();
+    });
+
+    async function seedDefaultTemplates() {
+      isSeeding = true;
+      try {
+        const batch = writeBatch(db);
+        defaultTemplates.forEach((template) => {
+          batch.set(doc(db, "templates", template.id), {
+            title: template.title,
+            category: template.category,
+            text: template.text,
+            updatedAt: serverTimestamp()
+          });
+        });
+        await batch.commit();
+        showStatus("Starter templates added", true);
+      } catch (error) {
+        console.error(error);
+        templates = defaultTemplates;
+        renderCategories();
+        renderTemplates();
+        showStatus("Firestore setup needed", false);
+      } finally {
+        isSeeding = false;
+      }
+    }
+
+    function sortTemplates(a, b) {
+      return a.category.localeCompare(b.category) || a.title.localeCompare(b.title);
+    }
 
     function getCategoryNames() {
       return [...new Set(templates.map((template) => cleanCategory(template.category)).filter(Boolean))]
@@ -340,6 +687,11 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
 
     function cleanCategory(category) {
       return String(category || "Custom").trim().replace(/\s+/g, " ") || "Custom";
+    }
+
+    function findExistingCategory(categoryName) {
+      const cleanedName = cleanCategory(categoryName);
+      return getCategoryNames().find((category) => category.toLowerCase() === cleanedName.toLowerCase()) || cleanedName;
     }
 
     function renderCategories() {
@@ -393,11 +745,148 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
         preview.className = "template-preview";
         preview.textContent = template.text.replace(/\s+/g, " ").trim();
 
+        const actions = document.createElement("div");
+        actions.className = "template-actions";
+
+        const editButton = document.createElement("button");
+        editButton.className = "action-button";
+        editButton.type = "button";
+        editButton.textContent = "Edit";
+        editButton.setAttribute("aria-label", `Edit ${template.title}`);
+        editButton.addEventListener("click", () => openModal(template));
+
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "action-button";
+        deleteButton.type = "button";
+        deleteButton.textContent = "Delete";
+        deleteButton.setAttribute("aria-label", `Delete ${template.title}`);
+        deleteButton.addEventListener("click", () => deleteTemplate(template));
+
         copyButton.append(title, meta, preview);
         copyButton.addEventListener("click", () => copyTemplate(template));
-        card.append(copyButton);
+        actions.append(editButton, deleteButton);
+        card.append(copyButton, actions);
         board.appendChild(card);
       });
+    }
+
+    function renderCategoryOptions(selectedCategory = "Custom") {
+      const selected = cleanCategory(selectedCategory);
+      const names = getCategoryNames();
+      if (!names.some((name) => name.toLowerCase() === selected.toLowerCase())) {
+        names.push(selected);
+        names.sort((a, b) => a.localeCompare(b));
+      }
+
+      categoryField.innerHTML = "";
+
+      const addOption = document.createElement("option");
+      addOption.value = addNewCategoryValue;
+      addOption.textContent = "Add New Category";
+      categoryField.appendChild(addOption);
+
+      names.forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        categoryField.appendChild(option);
+      });
+
+      categoryField.value = selected;
+      toggleNewCategoryField();
+    }
+
+    function openModal(template) {
+      editingId = template ? template.id : null;
+      modalTitle.textContent = template ? "Edit Template" : "Add Template";
+      saveTemplate.textContent = template ? "Update" : "Add";
+      titleField.value = template ? template.title : "";
+      renderCategoryOptions(template ? template.category : "Custom");
+      textField.value = template ? template.text : "";
+      modalBackdrop.classList.add("is-open");
+      titleField.focus();
+    }
+
+    function closeModal() {
+      editingId = null;
+      templateForm.reset();
+      newCategoryName.value = "";
+      newCategoryWrap.classList.remove("is-visible");
+      modalBackdrop.classList.remove("is-open");
+    }
+
+    async function submitTemplate(event) {
+      event.preventDefault();
+      const title = titleField.value.trim();
+      const category = getSelectedCategory();
+      const text = textField.value.trim();
+
+      if (!title || !category || !text) {
+        showStatus("Title, category, and text are required", false);
+        return;
+      }
+
+      const id = editingId || makeTemplateId(title);
+      try {
+        await setDoc(doc(db, "templates", id), {
+          title,
+          category,
+          text,
+          updatedAt: serverTimestamp()
+        });
+        closeModal();
+        showStatus(`${editingId ? "Updated" : "Added"}: ${title}`, true);
+      } catch (error) {
+        console.error(error);
+        showStatus("Save blocked by Firestore rules", false);
+      }
+    }
+
+    async function deleteTemplate(template) {
+      const shouldDelete = window.confirm(`Delete "${template.title}"?`);
+      if (!shouldDelete) {
+        return;
+      }
+
+      try {
+        await deleteDoc(doc(db, "templates", template.id));
+        showStatus(`Deleted: ${template.title}`, true);
+      } catch (error) {
+        console.error(error);
+        showStatus("Delete blocked by Firestore rules", false);
+      }
+    }
+
+    function toggleNewCategoryField() {
+      const isAddingCategory = categoryField.value === addNewCategoryValue;
+      newCategoryWrap.classList.toggle("is-visible", isAddingCategory);
+      if (isAddingCategory) {
+        newCategoryName.focus();
+      }
+    }
+
+    function saveCategoryFromField() {
+      const category = findExistingCategory(newCategoryName.value);
+      if (!category) {
+        showStatus("Category name is required", false);
+        return;
+      }
+      renderCategoryOptions(category);
+      newCategoryName.value = "";
+      showStatus(`Category ready: ${category}`, true);
+      textField.focus();
+    }
+
+    function getSelectedCategory() {
+      if (categoryField.value === addNewCategoryValue) {
+        return "";
+      }
+      return findExistingCategory(categoryField.value);
+    }
+
+    function makeTemplateId(title) {
+      const slug = title.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
+      return `${slug || "template"}-${Date.now().toString(36)}`;
     }
 
     async function copyTemplate(template) {
@@ -444,12 +933,36 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       statusTimer = window.setTimeout(() => {
         status.textContent = "Ready to copy";
         status.classList.remove("is-copied");
-      }, 2200);
+      }, 2500);
     }
 
     search.addEventListener("input", renderTemplates);
-    renderCategories();
-    renderTemplates();
+    addTemplate.addEventListener("click", () => openModal());
+    cancelTemplate.addEventListener("click", closeModal);
+    categoryField.addEventListener("change", toggleNewCategoryField);
+    saveNewCategory.addEventListener("click", saveCategoryFromField);
+    newCategoryName.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        saveCategoryFromField();
+      }
+    });
+    templateForm.addEventListener("submit", submitTemplate);
+    modalBackdrop.addEventListener("click", (event) => {
+      if (event.target === modalBackdrop) {
+        closeModal();
+      }
+    });
+    textField.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        templateForm.requestSubmit();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && modalBackdrop.classList.contains("is-open")) {
+        closeModal();
+      }
+    });
   </script>
 </body>
 </html>
