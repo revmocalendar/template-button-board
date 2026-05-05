@@ -855,7 +855,7 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       }
 
       if (!title || !category || !text) {
-        showStatus("Title, category, and text are required", false);
+        showStatus(categoryField.value === addNewCategoryValue ? "Category name is required" : "Title, category, and text are required", false);
         return;
       }
 
@@ -926,7 +926,7 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
 
     function getSelectedCategory() {
       if (categoryField.value === addNewCategoryValue) {
-        return "";
+        return findExistingCategory(newCategoryName.value);
       }
       return findExistingCategory(categoryField.value);
     }
