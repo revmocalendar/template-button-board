@@ -138,11 +138,37 @@
       color: var(--white);
     }
 
+    .add-template-button {
+      min-height: 44px;
+      padding: 9px 13px;
+      border: 2px dashed var(--campbell-orange);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--campbell-orange);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 140ms ease, color 140ms ease;
+    }
+
+    .add-template-button:hover {
+      background: var(--campbell-orange);
+      color: var(--white);
+    }
+
     .board {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
       gap: 12px;
       align-items: stretch;
+    }
+
+    .template-card {
+      position: relative;
+      display: flex;
     }
 
     .template-button {
@@ -206,6 +232,39 @@
       -webkit-box-orient: vertical;
     }
 
+    .delete-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: none;
+      border-radius: 4px;
+      background: rgba(30, 37, 43, 0.8);
+      color: var(--white);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 140ms ease, background 140ms ease;
+    }
+
+    .template-card:hover .delete-button {
+      opacity: 1;
+    }
+
+    .delete-button:hover {
+      background: rgba(30, 37, 43, 1);
+    }
+
+    .delete-button:focus-visible {
+      outline: 2px solid var(--campbell-orange);
+      outline-offset: 2px;
+    }
+
     .empty {
       display: none;
       padding: 22px;
@@ -247,6 +306,10 @@
       .template-button {
         min-height: 124px;
       }
+
+      .delete-button {
+        opacity: 1;
+      }
     }
   </style>
 </head>
@@ -263,6 +326,7 @@
     <section class="controls" aria-label="Template filters">
       <input class="search" id="search" type="search" placeholder="Search templates" autocomplete="off">
       <div class="categories" id="categories"></div>
+      <button class="add-template-button" id="addTemplateBtn" title="Add a new template">+</button>
     </section>
 
     <section class="board" id="board" aria-label="Copyable text templates"></section>
@@ -270,18 +334,35 @@
   </main>
 
   <script>
-    const templates = [
-      {
-        title: "Initial Follow Up",
-        category: "Follow Up",
-        text: `Hi {{name}},
+    let templates = [];
+
+    // Load templates from localStorage or use defaults
+    function loadTemplates() {
+      const stored = localStorage.getItem('templateBoardData');
+      if (stored) {
+        try {
+          templates = JSON.parse(stored);
+        } catch (error) {
+          templates = getDefaultTemplates();
+        }
+      } else {
+        templates = getDefaultTemplates();
+      }
+    }
+
+    function getDefaultTemplates() {
+      return [
+        {
+          title: "Initial Follow Up",
+          category: "Follow Up",
+          text: `Hi {{name}},
 
 Just checking in to see if you had a chance to review the information I sent over. Happy to answer questions or talk through next steps whenever it is convenient.`
-      },
-      {
-        title: "Document Request",
-        category: "Docs",
-        text: `Hi {{name}},
+        },
+        {
+          title: "Document Request",
+          category: "Docs",
+          text: `Hi {{name}},
 
 Could you please send over the following when you have a moment?
 
@@ -290,28 +371,35 @@ Could you please send over the following when you have a moment?
 - Copy of photo ID
 
 Thank you.`
-      },
-      {
-        title: "Appointment Reminder",
-        category: "Reminder",
-        text: `Hi {{name}},
+        },
+        {
+          title: "Appointment Reminder",
+          category: "Reminder",
+          text: `Hi {{name}},
 
 Quick reminder that we are scheduled for {{date}} at {{time}}. Looking forward to speaking with you.`
-      },
-      {
-        title: "Thank You",
-        category: "Follow Up",
-        text: `Hi {{name}},
+        },
+        {
+          title: "Thank You",
+          category: "Follow Up",
+          text: `Hi {{name}},
 
 Thank you for your time today. I appreciate the opportunity to help, and I will follow up with the next steps shortly.`
-      }
-    ];
+        }
+      ];
+    }
+
+    // Save templates to localStorage
+    function saveTemplates() {
+      localStorage.setItem('templateBoardData', JSON.stringify(templates));
+    }
 
     const board = document.querySelector("#board");
     const categories = document.querySelector("#categories");
     const empty = document.querySelector("#empty");
     const search = document.querySelector("#search");
     const status = document.querySelector("#status");
+    const addTemplateBtn = document.querySelector("#addTemplateBtn");
     let activeCategory = "All";
     let statusTimer;
 
@@ -345,7 +433,11 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       board.innerHTML = "";
       empty.classList.toggle("is-visible", filteredTemplates.length === 0);
 
-      filteredTemplates.forEach((template) => {
+      filteredTemplates.forEach((template, index) => {
+        const templateIndex = templates.indexOf(template);
+        const card = document.createElement("div");
+        card.className = "template-card";
+
         const button = document.createElement("button");
         button.className = "template-button";
         button.type = "button";
@@ -364,8 +456,47 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
 
         button.append(title, meta, preview);
         button.addEventListener("click", () => copyTemplate(template));
-        board.appendChild(button);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-button";
+        deleteBtn.type = "button";
+        deleteBtn.title = "Delete template";
+        deleteBtn.textContent = "🗑️";
+        deleteBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          deleteTemplate(template.title, templateIndex);
+        });
+
+        card.appendChild(button);
+        card.appendChild(deleteBtn);
+        board.appendChild(card);
       });
+    }
+
+    function deleteTemplate(title, index) {
+      if (confirm(`Are you sure you want to delete "${title}"?`)) {
+        templates.splice(index, 1);
+        saveTemplates();
+        renderCategories();
+        renderTemplates();
+        showStatus(`Deleted: ${title}`, false);
+      }
+    }
+
+    function addNewTemplate() {
+      const title = prompt("Enter the template title:");
+      if (title && title.trim()) {
+        const newTemplate = {
+          title: title.trim(),
+          category: "General",
+          text: ""
+        };
+        templates.push(newTemplate);
+        saveTemplates();
+        renderCategories();
+        renderTemplates();
+        showStatus(`Added: ${title.trim()}`, true);
+      }
     }
 
     async function copyTemplate(template) {
@@ -415,7 +546,9 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       }, 2200);
     }
 
+    addTemplateBtn.addEventListener("click", addNewTemplate);
     search.addEventListener("input", renderTemplates);
+    loadTemplates();
     renderCategories();
     renderTemplates();
   </script>
