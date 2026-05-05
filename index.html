@@ -36,7 +36,8 @@
     }
 
     button,
-    input {
+    input,
+    textarea {
       font: inherit;
     }
 
@@ -232,10 +233,21 @@
       -webkit-box-orient: vertical;
     }
 
-    .delete-button {
+    .template-actions {
       position: absolute;
       top: 8px;
       right: 8px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 140ms ease;
+    }
+
+    .template-card:hover .template-actions {
+      opacity: 1;
+    }
+
+    .action-button {
       width: 32px;
       height: 32px;
       padding: 0;
@@ -248,19 +260,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0;
-      transition: opacity 140ms ease, background 140ms ease;
+      transition: background 140ms ease;
     }
 
-    .template-card:hover .delete-button {
-      opacity: 1;
-    }
-
-    .delete-button:hover {
+    .action-button:hover {
       background: rgba(30, 37, 43, 1);
     }
 
-    .delete-button:focus-visible {
+    .action-button:focus-visible {
       outline: 2px solid var(--campbell-orange);
       outline-offset: 2px;
     }
@@ -277,6 +284,115 @@
 
     .empty.is-visible {
       display: block;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.is-open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--white);
+      border: 2px solid var(--campbell-black);
+      border-radius: 12px;
+      padding: 28px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(30, 37, 43, 0.3);
+    }
+
+    .modal-header {
+      margin: 0 0 20px 0;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--campbell-black);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: var(--campbell-black);
+      font-size: 14px;
+    }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1px solid var(--campbell-black);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--campbell-black);
+      outline: none;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      box-shadow: 0 0 0 3px rgba(234, 113, 37, 0.3);
+    }
+
+    .form-textarea {
+      min-height: 120px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .modal-button {
+      min-height: 42px;
+      padding: 10px 16px;
+      border: 2px solid var(--campbell-black);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      transition: background 140ms ease, color 140ms ease;
+    }
+
+    .modal-button.cancel {
+      background: var(--white);
+      color: var(--campbell-black);
+    }
+
+    .modal-button.cancel:hover {
+      background: var(--surface);
+    }
+
+    .modal-button.update {
+      background: var(--campbell-orange);
+      color: var(--white);
+      border-color: var(--campbell-orange);
+    }
+
+    .modal-button.update:hover {
+      background: var(--campbell-orange-dark);
+      border-color: var(--campbell-orange-dark);
     }
 
     @media (max-width: 760px) {
@@ -307,8 +423,13 @@
         min-height: 124px;
       }
 
-      .delete-button {
+      .template-actions {
         opacity: 1;
+      }
+
+      .modal {
+        width: 95%;
+        padding: 20px;
       }
     }
   </style>
@@ -333,8 +454,31 @@
     <p class="empty" id="empty">No matching templates.</p>
   </main>
 
+  <!-- Modal for Add/Edit -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2 class="modal-header" id="modalTitle">Add New Template</h2>
+      
+      <div class="form-group">
+        <label class="form-label" for="templateTitle">Title:</label>
+        <input class="form-input" id="templateTitle" type="text" placeholder="Enter template title">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="templateText">Text to Copy:</label>
+        <textarea class="form-textarea" id="templateText" placeholder="Enter the template message body"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="modal-button cancel" id="cancelBtn">Cancel</button>
+        <button class="modal-button update" id="submitBtn">Add</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let templates = [];
+    let editingIndex = null;
 
     // Load templates from localStorage or use defaults
     function loadTemplates() {
@@ -400,6 +544,13 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
     const search = document.querySelector("#search");
     const status = document.querySelector("#status");
     const addTemplateBtn = document.querySelector("#addTemplateBtn");
+    const modalOverlay = document.querySelector("#modalOverlay");
+    const modalTitle = document.querySelector("#modalTitle");
+    const templateTitle = document.querySelector("#templateTitle");
+    const templateText = document.querySelector("#templateText");
+    const cancelBtn = document.querySelector("#cancelBtn");
+    const submitBtn = document.querySelector("#submitBtn");
+    
     let activeCategory = "All";
     let statusTimer;
 
@@ -433,7 +584,7 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       board.innerHTML = "";
       empty.classList.toggle("is-visible", filteredTemplates.length === 0);
 
-      filteredTemplates.forEach((template, index) => {
+      filteredTemplates.forEach((template) => {
         const templateIndex = templates.indexOf(template);
         const card = document.createElement("div");
         card.className = "template-card";
@@ -457,8 +608,21 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
         button.append(title, meta, preview);
         button.addEventListener("click", () => copyTemplate(template));
 
+        const actions = document.createElement("div");
+        actions.className = "template-actions";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "action-button";
+        editBtn.type = "button";
+        editBtn.title = "Edit template";
+        editBtn.textContent = "✏️";
+        editBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openEditModal(templateIndex);
+        });
+
         const deleteBtn = document.createElement("button");
-        deleteBtn.className = "delete-button";
+        deleteBtn.className = "action-button";
         deleteBtn.type = "button";
         deleteBtn.title = "Delete template";
         deleteBtn.textContent = "🗑️";
@@ -467,10 +631,82 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
           deleteTemplate(template.title, templateIndex);
         });
 
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
         card.appendChild(button);
-        card.appendChild(deleteBtn);
+        card.appendChild(actions);
         board.appendChild(card);
       });
+    }
+
+    function openAddModal() {
+      editingIndex = null;
+      modalTitle.textContent = "Add New Template";
+      templateTitle.value = "";
+      templateText.value = "";
+      submitBtn.textContent = "Add";
+      submitBtn.className = "modal-button update";
+      modalOverlay.classList.add("is-open");
+      templateTitle.focus();
+    }
+
+    function openEditModal(index) {
+      editingIndex = index;
+      const template = templates[index];
+      modalTitle.textContent = "Edit Template";
+      templateTitle.value = template.title;
+      templateText.value = template.text;
+      submitBtn.textContent = "Update";
+      submitBtn.className = "modal-button update";
+      modalOverlay.classList.add("is-open");
+      templateTitle.focus();
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove("is-open");
+      editingIndex = null;
+      templateTitle.value = "";
+      templateText.value = "";
+    }
+
+    function saveTemplate() {
+      const title = templateTitle.value.trim();
+      const text = templateText.value.trim();
+
+      if (!title) {
+        alert("Please enter a template title");
+        return;
+      }
+
+      if (!text) {
+        alert("Please enter the text to copy");
+        return;
+      }
+
+      if (editingIndex !== null) {
+        // Update existing template
+        templates[editingIndex].title = title;
+        templates[editingIndex].text = text;
+        saveTemplates();
+        renderCategories();
+        renderTemplates();
+        showStatus(`Updated: ${title}`, true);
+      } else {
+        // Add new template
+        const newTemplate = {
+          title: title,
+          category: "General",
+          text: text
+        };
+        templates.push(newTemplate);
+        saveTemplates();
+        renderCategories();
+        renderTemplates();
+        showStatus(`Added: ${title}`, true);
+      }
+
+      closeModal();
     }
 
     function deleteTemplate(title, index) {
@@ -480,22 +716,6 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
         renderCategories();
         renderTemplates();
         showStatus(`Deleted: ${title}`, false);
-      }
-    }
-
-    function addNewTemplate() {
-      const title = prompt("Enter the template title:");
-      if (title && title.trim()) {
-        const newTemplate = {
-          title: title.trim(),
-          category: "General",
-          text: ""
-        };
-        templates.push(newTemplate);
-        saveTemplates();
-        renderCategories();
-        renderTemplates();
-        showStatus(`Added: ${title.trim()}`, true);
       }
     }
 
@@ -546,8 +766,26 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       }, 2200);
     }
 
-    addTemplateBtn.addEventListener("click", addNewTemplate);
+    // Event listeners
+    addTemplateBtn.addEventListener("click", openAddModal);
+    cancelBtn.addEventListener("click", closeModal);
+    submitBtn.addEventListener("click", saveTemplate);
     search.addEventListener("input", renderTemplates);
+
+    // Close modal when clicking outside
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) {
+        closeModal();
+      }
+    });
+
+    // Allow Enter key to submit
+    templateText.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && e.ctrlKey) {
+        saveTemplate();
+      }
+    });
+
     loadTemplates();
     renderCategories();
     renderTemplates();
