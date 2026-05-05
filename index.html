@@ -820,13 +820,18 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       const title = titleField.value.trim();
       const category = getSelectedCategory();
       const text = textField.value.trim();
+      const isEditing = Boolean(editingId);
+      const id = editingId || makeTemplateId(title);
 
       if (!title || !category || !text) {
         showStatus("Title, category, and text are required", false);
         return;
       }
 
-      const id = editingId || makeTemplateId(title);
+      saveTemplate.disabled = true;
+      saveTemplate.textContent = "Saving...";
+      closeModal();
+
       try {
         await setDoc(doc(db, "templates", id), {
           title,
@@ -834,11 +839,17 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
           text,
           updatedAt: serverTimestamp()
         });
-        closeModal();
-        showStatus(`${editingId ? "Updated" : "Added"}: ${title}`, true);
+        showStatus(`${isEditing ? "Updated" : "Added"}: ${title}`, true);
       } catch (error) {
         console.error(error);
+        openModal(isEditing ? { id, title, category, text } : null);
+        titleField.value = title;
+        renderCategoryOptions(category);
+        textField.value = text;
         showStatus("Save blocked by Firestore rules", false);
+      } finally {
+        saveTemplate.disabled = false;
+        saveTemplate.textContent = editingId ? "Update" : "Add";
       }
     }
 
