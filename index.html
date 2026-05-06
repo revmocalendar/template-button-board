@@ -94,6 +94,11 @@
       background: var(--campbell-orange-dark);
     }
 
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+    }
+
     .status {
       min-width: 180px;
       min-height: 42px;
@@ -117,7 +122,7 @@
 
     .controls {
       display: grid;
-      grid-template-columns: minmax(220px, 380px) 1fr;
+      grid-template-columns: minmax(220px, 380px) auto 1fr;
       gap: 14px;
       align-items: start;
       margin: 18px 0;
@@ -161,6 +166,23 @@
       color: var(--white);
     }
 
+    .category-edit-button {
+      min-height: 44px;
+      padding: 9px 13px;
+      border: 1px solid var(--campbell-black);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--campbell-black);
+      cursor: pointer;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .category-edit-button:hover {
+      background: var(--campbell-black);
+      color: var(--white);
+    }
+
     .board {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
@@ -175,8 +197,8 @@
       min-height: 0;
       border: 1px solid var(--campbell-black);
       border-radius: 8px;
-      background: var(--campbell-orange);
-      color: var(--white);
+      background: var(--card-bg, var(--campbell-orange));
+      color: var(--card-text, var(--white));
       box-shadow: 0 1px 2px rgba(30, 37, 43, 0.1);
       transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease;
       overflow: hidden;
@@ -184,8 +206,8 @@
 
     .template-card:hover {
       transform: translateY(-1px);
-      background: var(--campbell-orange-dark);
       box-shadow: 0 10px 22px var(--shadow);
+      filter: brightness(0.94);
     }
 
     .template-copy-button {
@@ -196,7 +218,7 @@
       padding: 14px 14px 44px;
       border: 0;
       background: transparent;
-      color: var(--white);
+      color: inherit;
       text-align: left;
       cursor: pointer;
     }
@@ -232,7 +254,7 @@
       padding: 4px 7px;
       border: 1px solid rgba(255, 255, 255, 0.72);
       border-radius: 6px;
-      color: var(--white);
+      color: inherit;
       font-size: 12px;
       font-weight: 800;
       line-height: 1;
@@ -241,7 +263,7 @@
     .template-preview {
       display: -webkit-box;
       margin-top: 9px;
-      color: var(--white);
+      color: inherit;
       font-size: 13px;
       line-height: 1.32;
       overflow: hidden;
@@ -272,7 +294,7 @@
       border: 1px solid var(--campbell-black);
       border-radius: 8px;
       background: var(--campbell-black);
-      color: var(--white);
+      color: inherit;
       cursor: pointer;
       font-size: 12px;
       font-weight: 850;
@@ -393,6 +415,57 @@
       font-weight: 850;
     }
 
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .color-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .color-field label {
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .color-field input[type="color"] {
+      width: 100%;
+      height: 44px;
+      padding: 4px;
+      border: 1px solid var(--campbell-black);
+      border-radius: 8px;
+      background: var(--white);
+      cursor: pointer;
+    }
+
+    .category-style-list {
+      display: grid;
+      gap: 12px;
+      max-height: min(58vh, 520px);
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .category-style-row {
+      display: grid;
+      grid-template-columns: 1fr 96px 96px;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .category-style-name {
+      font-weight: 850;
+      overflow-wrap: anywhere;
+    }
+
     .modal-actions {
       display: flex;
       justify-content: flex-end;
@@ -436,6 +509,7 @@
 
       .status,
       .categories,
+      .category-edit-button,
       .primary-action {
         width: 100%;
       }
@@ -467,6 +541,11 @@
         grid-template-columns: 1fr;
       }
 
+      .color-grid,
+      .category-style-row {
+        grid-template-columns: 1fr;
+      }
+
       .new-category:not(.is-visible) {
         display: none;
       }
@@ -486,6 +565,7 @@
 
     <section class="controls" aria-label="Template filters">
       <input class="search" id="search" type="search" placeholder="Search templates" autocomplete="off">
+      <button class="category-edit-button" id="editCategories" type="button">Edit Categories</button>
       <div class="categories" id="categories"></div>
     </section>
 
@@ -510,6 +590,16 @@
               <input id="newCategoryName" type="text" autocomplete="off">
             </div>
             <button class="new-category-save" id="saveNewCategory" type="button">Save</button>
+            <div class="color-grid">
+              <div class="color-field">
+                <label for="newCategoryBg">Button Color</label>
+                <input id="newCategoryBg" type="color" value="#ea7125">
+              </div>
+              <div class="color-field">
+                <label for="newCategoryText">Text Color</label>
+                <input id="newCategoryText" type="color" value="#ffffff">
+              </div>
+            </div>
           </div>
         </div>
         <div class="field">
@@ -519,6 +609,19 @@
         <div class="modal-actions">
           <button class="modal-button secondary" id="cancelTemplate" type="button">Cancel</button>
           <button class="modal-button primary" id="saveTemplate" type="submit">Add</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="categoryModalBackdrop" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle">
+      <h2 id="categoryModalTitle">Edit Categories</h2>
+      <form id="categoryStyleForm">
+        <div class="category-style-list" id="categoryStyleList"></div>
+        <div class="modal-actions">
+          <button class="modal-button secondary" id="cancelCategoryStyles" type="button">Cancel</button>
+          <button class="modal-button primary" id="saveCategoryStyles" type="submit">Save</button>
         </div>
       </form>
     </section>
@@ -550,6 +653,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const templatesCollection = collection(db, "templates");
+    const categoryStylesCollection = collection(db, "categoryStyles");
+    const defaultCategoryStyle = {
+      backgroundColor: "#ea7125",
+      textColor: "#ffffff"
+    };
     const defaultTemplates = [
       {
         id: "initial-follow-up",
@@ -597,6 +705,7 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
     const search = document.querySelector("#search");
     const status = document.querySelector("#status");
     const addTemplate = document.querySelector("#addTemplate");
+    const editCategories = document.querySelector("#editCategories");
     const modalBackdrop = document.querySelector("#modalBackdrop");
     const modalTitle = document.querySelector("#modalTitle");
     const templateForm = document.querySelector("#templateForm");
@@ -604,12 +713,20 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
     const categoryField = document.querySelector("#templateCategory");
     const newCategoryWrap = document.querySelector("#newCategoryWrap");
     const newCategoryName = document.querySelector("#newCategoryName");
+    const newCategoryBg = document.querySelector("#newCategoryBg");
+    const newCategoryText = document.querySelector("#newCategoryText");
     const saveNewCategory = document.querySelector("#saveNewCategory");
     const textField = document.querySelector("#templateText");
     const cancelTemplate = document.querySelector("#cancelTemplate");
     const saveTemplate = document.querySelector("#saveTemplate");
+    const categoryModalBackdrop = document.querySelector("#categoryModalBackdrop");
+    const categoryStyleForm = document.querySelector("#categoryStyleForm");
+    const categoryStyleList = document.querySelector("#categoryStyleList");
+    const cancelCategoryStyles = document.querySelector("#cancelCategoryStyles");
+    const saveCategoryStyles = document.querySelector("#saveCategoryStyles");
 
     let templates = [];
+    let categoryStyles = {};
     let activeCategory = "All";
     let editingId = null;
     let statusTimer;
@@ -618,6 +735,7 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
     let firestoreReady = false;
 
     addTemplate.disabled = true;
+    editCategories.disabled = true;
 
     window.setTimeout(() => {
       if (!initialSnapshotSeen) {
@@ -640,6 +758,7 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
 
       firestoreReady = true;
       addTemplate.disabled = false;
+      editCategories.disabled = false;
 
       if (!initialSnapshotSeen && snapshot.empty && !isSeeding) {
         initialSnapshotSeen = true;
@@ -671,10 +790,30 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       console.error(error);
       firestoreReady = false;
       addTemplate.disabled = true;
+      editCategories.disabled = true;
       showStatus("Enable Firestore", false);
       templates = defaultTemplates;
       renderCategories();
       renderTemplates();
+    });
+
+    onSnapshot(categoryStylesCollection, { includeMetadataChanges: true }, (snapshot) => {
+      if (snapshot.metadata.hasPendingWrites || snapshot.metadata.fromCache) {
+        return;
+      }
+
+      categoryStyles = {};
+      snapshot.docs.forEach((styleDoc) => {
+        const data = styleDoc.data();
+        const category = cleanCategory(data.name || data.category || styleDoc.id);
+        categoryStyles[category.toLowerCase()] = {
+          backgroundColor: normalizeColor(data.backgroundColor, defaultCategoryStyle.backgroundColor),
+          textColor: normalizeColor(data.textColor, defaultCategoryStyle.textColor)
+        };
+      });
+      renderTemplates();
+    }, (error) => {
+      console.error(error);
     });
 
     async function seedDefaultTemplates() {
@@ -688,6 +827,11 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
             text: template.text,
             updatedAt: serverTimestamp()
           });
+          batch.set(doc(db, "categoryStyles", categoryStyleDocId(template.category)), {
+            name: cleanCategory(template.category),
+            ...defaultCategoryStyle,
+            updatedAt: serverTimestamp()
+          }, { merge: true });
         });
         await batch.commit();
         showStatus("Starter templates added", true);
@@ -753,6 +897,9 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       filteredTemplates.forEach((template) => {
         const card = document.createElement("article");
         card.className = "template-card";
+        const style = getCategoryStyle(template.category);
+        card.style.setProperty("--card-bg", style.backgroundColor);
+        card.style.setProperty("--card-text", style.textColor);
 
         const copyButton = document.createElement("button");
         copyButton.className = "template-copy-button";
@@ -829,6 +976,8 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       titleField.value = template ? template.title : "";
       renderCategoryOptions(template ? template.category : "Custom");
       textField.value = template ? template.text : "";
+      newCategoryBg.value = defaultCategoryStyle.backgroundColor;
+      newCategoryText.value = defaultCategoryStyle.textColor;
       modalBackdrop.classList.add("is-open");
       titleField.focus();
     }
@@ -837,6 +986,8 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       editingId = null;
       templateForm.reset();
       newCategoryName.value = "";
+      newCategoryBg.value = defaultCategoryStyle.backgroundColor;
+      newCategoryText.value = defaultCategoryStyle.textColor;
       newCategoryWrap.classList.remove("is-visible");
       modalBackdrop.classList.remove("is-open");
     }
@@ -848,6 +999,7 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       const text = textField.value.trim();
       const isEditing = Boolean(editingId);
       const id = editingId || makeTemplateId(title);
+      const isAddingCategory = categoryField.value === addNewCategoryValue;
 
       if (!firestoreReady) {
         showStatus("Enable Firestore first", false);
@@ -864,6 +1016,9 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       closeModal();
 
       try {
+        if (isAddingCategory) {
+          await saveCategoryStyle(category, newCategoryBg.value, newCategoryText.value);
+        }
         await setDoc(doc(db, "templates", id), {
           title,
           category,
@@ -912,16 +1067,22 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       }
     }
 
-    function saveCategoryFromField() {
+    async function saveCategoryFromField() {
       const category = findExistingCategory(newCategoryName.value);
       if (!category) {
         showStatus("Category name is required", false);
         return;
       }
-      renderCategoryOptions(category);
-      newCategoryName.value = "";
-      showStatus(`Category ready: ${category}`, true);
-      textField.focus();
+      try {
+        await saveCategoryStyle(category, newCategoryBg.value, newCategoryText.value);
+        renderCategoryOptions(category);
+        newCategoryName.value = "";
+        showStatus(`Category ready: ${category}`, true);
+        textField.focus();
+      } catch (error) {
+        console.error(error);
+        showStatus("Category save blocked", false);
+      }
     }
 
     function getSelectedCategory() {
@@ -929,6 +1090,111 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
         return findExistingCategory(newCategoryName.value);
       }
       return findExistingCategory(categoryField.value);
+    }
+
+    async function saveCategoryStyle(category, backgroundColor, textColor) {
+      if (!firestoreReady) {
+        showStatus("Enable Firestore first", false);
+        return;
+      }
+
+      const cleanName = cleanCategory(category);
+      await setDoc(doc(db, "categoryStyles", categoryStyleDocId(cleanName)), {
+        name: cleanName,
+        backgroundColor: normalizeColor(backgroundColor, defaultCategoryStyle.backgroundColor),
+        textColor: normalizeColor(textColor, defaultCategoryStyle.textColor),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    function getCategoryStyle(category) {
+      return categoryStyles[cleanCategory(category).toLowerCase()] || defaultCategoryStyle;
+    }
+
+    function categoryStyleDocId(category) {
+      return encodeURIComponent(cleanCategory(category).toLowerCase());
+    }
+
+    function normalizeColor(color, fallback) {
+      const normalized = String(color || "").trim();
+      return /^#[0-9a-f]{6}$/i.test(normalized) ? normalized : fallback;
+    }
+
+    function openCategoryModal() {
+      renderCategoryStyleRows();
+      categoryModalBackdrop.classList.add("is-open");
+    }
+
+    function closeCategoryModal() {
+      categoryStyleForm.reset();
+      categoryStyleList.innerHTML = "";
+      categoryModalBackdrop.classList.remove("is-open");
+    }
+
+    function renderCategoryStyleRows() {
+      categoryStyleList.innerHTML = "";
+      getCategoryNames().forEach((category) => {
+        const style = getCategoryStyle(category);
+        const row = document.createElement("div");
+        row.className = "category-style-row";
+        row.dataset.category = category;
+
+        const name = document.createElement("div");
+        name.className = "category-style-name";
+        name.textContent = category;
+
+        const backgroundWrap = document.createElement("div");
+        backgroundWrap.className = "color-field";
+        const backgroundLabel = document.createElement("label");
+        backgroundLabel.textContent = "Button";
+        const backgroundInput = document.createElement("input");
+        backgroundInput.type = "color";
+        backgroundInput.value = style.backgroundColor;
+        backgroundInput.dataset.role = "background";
+        backgroundWrap.append(backgroundLabel, backgroundInput);
+
+        const textWrap = document.createElement("div");
+        textWrap.className = "color-field";
+        const textLabel = document.createElement("label");
+        textLabel.textContent = "Text";
+        const textInput = document.createElement("input");
+        textInput.type = "color";
+        textInput.value = style.textColor;
+        textInput.dataset.role = "text";
+        textWrap.append(textLabel, textInput);
+
+        row.append(name, backgroundWrap, textWrap);
+        categoryStyleList.appendChild(row);
+      });
+    }
+
+    async function submitCategoryStyles(event) {
+      event.preventDefault();
+      if (!firestoreReady) {
+        showStatus("Enable Firestore first", false);
+        return;
+      }
+
+      const rows = [...categoryStyleList.querySelectorAll(".category-style-row")].map((row) => ({
+        category: row.dataset.category,
+        backgroundColor: row.querySelector('[data-role="background"]').value,
+        textColor: row.querySelector('[data-role="text"]').value
+      }));
+
+      saveCategoryStyles.disabled = true;
+      saveCategoryStyles.textContent = "Saving...";
+      closeCategoryModal();
+
+      try {
+        await Promise.all(rows.map((row) => saveCategoryStyle(row.category, row.backgroundColor, row.textColor)));
+        showStatus("Category colors saved", true);
+      } catch (error) {
+        console.error(error);
+        showStatus("Category colors blocked", false);
+      } finally {
+        saveCategoryStyles.disabled = false;
+        saveCategoryStyles.textContent = "Save";
+      }
     }
 
     function makeTemplateId(title) {
@@ -985,7 +1251,9 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
 
     search.addEventListener("input", renderTemplates);
     addTemplate.addEventListener("click", () => openModal());
+    editCategories.addEventListener("click", openCategoryModal);
     cancelTemplate.addEventListener("click", closeModal);
+    cancelCategoryStyles.addEventListener("click", closeCategoryModal);
     categoryField.addEventListener("change", toggleNewCategoryField);
     saveNewCategory.addEventListener("click", saveCategoryFromField);
     newCategoryName.addEventListener("keydown", (event) => {
@@ -995,9 +1263,15 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
       }
     });
     templateForm.addEventListener("submit", submitTemplate);
+    categoryStyleForm.addEventListener("submit", submitCategoryStyles);
     modalBackdrop.addEventListener("click", (event) => {
       if (event.target === modalBackdrop) {
         closeModal();
+      }
+    });
+    categoryModalBackdrop.addEventListener("click", (event) => {
+      if (event.target === categoryModalBackdrop) {
+        closeCategoryModal();
       }
     });
     textField.addEventListener("keydown", (event) => {
@@ -1008,6 +1282,9 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && modalBackdrop.classList.contains("is-open")) {
         closeModal();
+      }
+      if (event.key === "Escape" && categoryModalBackdrop.classList.contains("is-open")) {
+        closeCategoryModal();
       }
     });
   </script>
