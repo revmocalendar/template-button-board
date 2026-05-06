@@ -9,6 +9,8 @@ A small static button board for copying reusable text templates. It is designed 
 - Search and filter templates.
 - Filter by category.
 - Choose from existing categories or add a new category.
+- Assign button and text colors by category.
+- Edit category colors so all matching buttons update together.
 - Sync shared templates through Firebase Firestore.
 
 ## Edit Templates
@@ -38,6 +40,24 @@ After Firestore has templates, the live data in Firebase is the source of truth.
 5. Start in test mode while building.
 
 Test mode is not permanent. Later, lock editing behind Firebase Authentication so only approved users can add, edit, or delete buttons.
+
+For the current shared-editing version, Firestore rules must allow both `templates` and `categoryStyles`:
+
+```js
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /templates/{templateId} {
+      allow read, write: if true;
+    }
+
+    match /categoryStyles/{categoryId} {
+      allow read, write: if true;
+    }
+  }
+}
+```
 
 ## Publish With GitHub Pages
 
