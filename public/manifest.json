@@ -1,0 +1,17 @@
+{
+  "name": "Button Board",
+  "short_name": "Button Board",
+  "description": "Fast copy templates for follow-ups, document requests, reminders, and thank-you notes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e252b",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
