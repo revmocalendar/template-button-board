@@ -4,12 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#1e252b">
-  <meta name="apple-mobile-web-app-title" content="Button Board">
-  <meta name="application-name" content="Button Board">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=5">
-  <link rel="apple-touch-icon-precomposed" sizes="180x180" href="apple-touch-icon.png?v=5">
-  <link rel="icon" type="image/png" href="apple-touch-icon.png?v=5">
-  <title>Button Board</title>
+  <title>Template Button Board</title>
   <style>
     :root {
       color-scheme: light;
@@ -561,7 +556,7 @@
   <main>
     <header class="topbar">
       <div>
-        <h1>Button Board</h1>
+        <h1>Template Button Board</h1>
         <p class="subtitle">Fast copy templates for follow-ups, document requests, reminders, and thank-you notes.</p>
       </div>
       <button class="primary-action" id="addTemplate" type="button" aria-label="Add template">+</button>
@@ -1000,3 +995,298 @@ Thank you for your time today. I appreciate the opportunity to help, and I will 
     async function submitTemplate(event) {
       event.preventDefault();
       const title = titleField.value.trim();
+      const category = getSelectedCategory();
+      const text = textField.value.trim();
+      const isEditing = Boolean(editingId);
+      const id = editingId || makeTemplateId(title);
+      const isAddingCategory = categoryField.value === addNewCategoryValue;
+
+      if (!firestoreReady) {
+        showStatus("Enable Firestore first", false);
+        return;
+      }
+
+      if (!title || !category || !text) {
+        showStatus(categoryField.value === addNewCategoryValue ? "Category name is required" : "Title, category, and text are required", false);
+        return;
+      }
+
+      saveTemplate.disabled = true;
+      saveTemplate.textContent = "Saving...";
+      closeModal();
+
+      try {
+        if (isAddingCategory) {
+          await saveCategoryStyle(category, newCategoryBg.value, newCategoryText.value);
+        }
+        await setDoc(doc(db, "templates", id), {
+          title,
+          category,
+          text,
+          updatedAt: serverTimestamp()
+        });
+        showStatus(`${isEditing ? "Updated" : "Added"}: ${title}`, true);
+      } catch (error) {
+        console.error(error);
+        openModal(isEditing ? { id, title, category, text } : null);
+        titleField.value = title;
+        renderCategoryOptions(category);
+        textField.value = text;
+        showStatus("Save blocked by Firestore rules", false);
+      } finally {
+        saveTemplate.disabled = false;
+        saveTemplate.textContent = editingId ? "Update" : "Add";
+      }
+    }
+
+    async function deleteTemplate(template) {
+      if (!firestoreReady) {
+        showStatus("Enable Firestore first", false);
+        return;
+      }
+
+      const shouldDelete = window.confirm(`Delete "${template.title}"?`);
+      if (!shouldDelete) {
+        return;
+      }
+
+      try {
+        await deleteDoc(doc(db, "templates", template.id));
+        showStatus(`Deleted: ${template.title}`, true);
+      } catch (error) {
+        console.error(error);
+        showStatus("Delete blocked by Firestore rules", false);
+      }
+    }
+
+    function toggleNewCategoryField() {
+      const isAddingCategory = categoryField.value === addNewCategoryValue;
+      newCategoryWrap.classList.toggle("is-visible", isAddingCategory);
+      if (isAddingCategory) {
+        newCategoryName.focus();
+      }
+    }
+
+    async function saveCategoryFromField() {
+      const category = findExistingCategory(newCategoryName.value);
+      if (!category) {
+        showStatus("Category name is required", false);
+        return;
+      }
+      try {
+        await saveCategoryStyle(category, newCategoryBg.value, newCategoryText.value);
+        renderCategoryOptions(category);
+        newCategoryName.value = "";
+        showStatus(`Category ready: ${category}`, true);
+        textField.focus();
+      } catch (error) {
+        console.error(error);
+        showStatus("Category save blocked", false);
+      }
+    }
+
+    function getSelectedCategory() {
+      if (categoryField.value === addNewCategoryValue) {
+        return findExistingCategory(newCategoryName.value);
+      }
+      return findExistingCategory(categoryField.value);
+    }
+
+    async function saveCategoryStyle(category, backgroundColor, textColor) {
+      if (!firestoreReady) {
+        showStatus("Enable Firestore first", false);
+        return;
+      }
+
+      const cleanName = cleanCategory(category);
+      await setDoc(doc(db, "categoryStyles", categoryStyleDocId(cleanName)), {
+        name: cleanName,
+        backgroundColor: normalizeColor(backgroundColor, defaultCategoryStyle.backgroundColor),
+        textColor: normalizeColor(textColor, defaultCategoryStyle.textColor),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    function getCategoryStyle(category) {
+      return categoryStyles[cleanCategory(category).toLowerCase()] || defaultCategoryStyle;
+    }
+
+    function categoryStyleDocId(category) {
+      return encodeURIComponent(cleanCategory(category).toLowerCase());
+    }
+
+    function normalizeColor(color, fallback) {
+      const normalized = String(color || "").trim();
+      return /^#[0-9a-f]{6}$/i.test(normalized) ? normalized : fallback;
+    }
+
+    function openCategoryModal() {
+      renderCategoryStyleRows();
+      categoryModalBackdrop.classList.add("is-open");
+    }
+
+    function closeCategoryModal() {
+      categoryStyleForm.reset();
+      categoryStyleList.innerHTML = "";
+      categoryModalBackdrop.classList.remove("is-open");
+    }
+
+    function renderCategoryStyleRows() {
+      categoryStyleList.innerHTML = "";
+      getCategoryNames().forEach((category) => {
+        const style = getCategoryStyle(category);
+        const row = document.createElement("div");
+        row.className = "category-style-row";
+        row.dataset.category = category;
+
+        const name = document.createElement("div");
+        name.className = "category-style-name";
+        name.textContent = category;
+
+        const backgroundWrap = document.createElement("div");
+        backgroundWrap.className = "color-field";
+        const backgroundLabel = document.createElement("label");
+        backgroundLabel.textContent = "Button";
+        const backgroundInput = document.createElement("input");
+        backgroundInput.type = "color";
+        backgroundInput.value = style.backgroundColor;
+        backgroundInput.dataset.role = "background";
+        backgroundWrap.append(backgroundLabel, backgroundInput);
+
+        const textWrap = document.createElement("div");
+        textWrap.className = "color-field";
+        const textLabel = document.createElement("label");
+        textLabel.textContent = "Text";
+        const textInput = document.createElement("input");
+        textInput.type = "color";
+        textInput.value = style.textColor;
+        textInput.dataset.role = "text";
+        textWrap.append(textLabel, textInput);
+
+        row.append(name, backgroundWrap, textWrap);
+        categoryStyleList.appendChild(row);
+      });
+    }
+
+    async function submitCategoryStyles(event) {
+      event.preventDefault();
+      if (!firestoreReady) {
+        showStatus("Enable Firestore first", false);
+        return;
+      }
+
+      const rows = [...categoryStyleList.querySelectorAll(".category-style-row")].map((row) => ({
+        category: row.dataset.category,
+        backgroundColor: row.querySelector('[data-role="background"]').value,
+        textColor: row.querySelector('[data-role="text"]').value
+      }));
+
+      saveCategoryStyles.disabled = true;
+      saveCategoryStyles.textContent = "Saving...";
+      closeCategoryModal();
+
+      try {
+        await Promise.all(rows.map((row) => saveCategoryStyle(row.category, row.backgroundColor, row.textColor)));
+        showStatus("Category colors saved", true);
+      } catch (error) {
+        console.error(error);
+        showStatus("Category colors blocked", false);
+      } finally {
+        saveCategoryStyles.disabled = false;
+        saveCategoryStyles.textContent = "Save";
+      }
+    }
+
+    function makeTemplateId(title) {
+      const slug = title.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
+      return `${slug || "template"}-${Date.now().toString(36)}`;
+    }
+
+    async function copyTemplate(template) {
+      try {
+        let copied = false;
+        if (navigator.clipboard && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(template.text);
+            copied = true;
+          } catch (error) {
+            copied = false;
+          }
+        }
+
+        if (!copied) {
+          fallbackCopy(template.text);
+        }
+        showStatus(`Copied: ${template.title}`, true);
+      } catch (error) {
+        showStatus("Copy blocked by browser", false);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.setAttribute("readonly", "");
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999px";
+      textArea.style.top = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
+      const copied = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      if (!copied) {
+        throw new Error("Fallback copy failed");
+      }
+    }
+
+    function showStatus(message, copied) {
+      window.clearTimeout(statusTimer);
+      status.textContent = message;
+      status.classList.toggle("is-copied", copied);
+      statusTimer = window.setTimeout(() => {
+        status.textContent = "Ready to copy";
+        status.classList.remove("is-copied");
+      }, 2500);
+    }
+
+    search.addEventListener("input", renderTemplates);
+    addTemplate.addEventListener("click", () => openModal());
+    editCategories.addEventListener("click", openCategoryModal);
+    cancelTemplate.addEventListener("click", closeModal);
+    cancelCategoryStyles.addEventListener("click", closeCategoryModal);
+    categoryField.addEventListener("change", toggleNewCategoryField);
+    saveNewCategory.addEventListener("click", saveCategoryFromField);
+    newCategoryName.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        saveCategoryFromField();
+      }
+    });
+    templateForm.addEventListener("submit", submitTemplate);
+    categoryStyleForm.addEventListener("submit", submitCategoryStyles);
+    modalBackdrop.addEventListener("click", (event) => {
+      if (event.target === modalBackdrop) {
+        closeModal();
+      }
+    });
+    categoryModalBackdrop.addEventListener("click", (event) => {
+      if (event.target === categoryModalBackdrop) {
+        closeCategoryModal();
+      }
+    });
+    textField.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        templateForm.requestSubmit();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && modalBackdrop.classList.contains("is-open")) {
+        closeModal();
+      }
+      if (event.key === "Escape" && categoryModalBackdrop.classList.contains("is-open")) {
+        closeCategoryModal();
+      }
+    });
+  </script>
+</body>
+</html>
